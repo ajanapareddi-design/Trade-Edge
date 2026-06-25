@@ -1,22 +1,35 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: FinEdge API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: user
+    description: User profile and subscription
+  - name: learn
+    description: Financial literacy lessons
+  - name: watchlist
+    description: Stock watchlist
+  - name: paper-trade
+    description: Paper trading
+  - name: portfolio
+    description: Portfolio holdings
+  - name: stocks
+    description: Stock market data
+  - name: stripe
+    description: Stripe payments
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +37,1040 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /user/me:
+    get:
+      operationId: getMe
+      tags: [user]
+      summary: Get current user profile
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateMe
+      tags: [user]
+      summary: Update user profile
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /user/quiz:
+    get:
+      operationId: getQuizPreferences
+      tags: [user]
+      summary: Get user trading quiz preferences
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Quiz preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizPreferences"
+    post:
+      operationId: saveQuizPreferences
+      tags: [user]
+      summary: Save user trading quiz preferences
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizPreferencesInput"
+      responses:
+        "200":
+          description: Saved quiz preferences
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizPreferences"
+
+  /user/streak:
+    get:
+      operationId: getLearningStreak
+      tags: [user]
+      summary: Get user learning streak data
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Streak data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningStreak"
+    post:
+      operationId: checkInStreak
+      tags: [user]
+      summary: Record daily check-in for streak
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Updated streak
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningStreak"
+
+  /learn/today:
+    get:
+      operationId: getTodayLesson
+      tags: [learn]
+      summary: Get today's financial literacy lesson
+      responses:
+        "200":
+          description: Today's lesson
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+
+  /learn/upcoming:
+    get:
+      operationId: getUpcomingLessons
+      tags: [learn]
+      summary: Get upcoming lessons (blurred preview)
+      responses:
+        "200":
+          description: Upcoming lessons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LessonPreview"
+
+  /learn/concepts:
+    get:
+      operationId: listConcepts
+      tags: [learn]
+      summary: List all financial concepts
+      responses:
+        "200":
+          description: All concepts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LessonPreview"
+
+  /watchlist:
+    get:
+      operationId: getWatchlist
+      tags: [watchlist]
+      summary: Get user watchlist
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Watchlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WatchlistItem"
+    post:
+      operationId: addToWatchlist
+      tags: [watchlist]
+      summary: Add ticker to watchlist
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchlistInput"
+      responses:
+        "201":
+          description: Added item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchlistItem"
+
+  /watchlist/{ticker}:
+    delete:
+      operationId: removeFromWatchlist
+      tags: [watchlist]
+      summary: Remove ticker from watchlist
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /stocks/discover:
+    get:
+      operationId: discoverStocks
+      tags: [stocks]
+      summary: Get curated stock discovery list based on user preferences
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Discovered stocks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockCard"
+
+  /stocks/quote/{ticker}:
+    get:
+      operationId: getStockQuote
+      tags: [stocks]
+      summary: Get current stock quote
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stock quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockQuote"
+
+  /stocks/ohlc/{ticker}:
+    get:
+      operationId: getStockOHLC
+      tags: [stocks]
+      summary: Get OHLC candle data for a stock (last 5 days)
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OHLC candle data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OHLCCandle"
+
+  /stocks/search:
+    get:
+      operationId: searchStocks
+      tags: [stocks]
+      summary: Search stocks by ticker or company name
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockSearchResult"
+
+  /stocks/insight:
+    get:
+      operationId: getMarketInsights
+      tags: [stocks]
+      summary: Get daily buy signal and slowdown alert
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Market insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketInsights"
+
+  /paper-trade/portfolio:
+    get:
+      operationId: getPaperPortfolio
+      tags: [paper-trade]
+      summary: Get paper trading portfolio
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Paper portfolio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaperPortfolio"
+
+  /paper-trade/positions:
+    get:
+      operationId: getPaperPositions
+      tags: [paper-trade]
+      summary: Get open paper trading positions
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Paper positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaperPosition"
+
+  /paper-trade/trade:
+    post:
+      operationId: executePaperTrade
+      tags: [paper-trade]
+      summary: Execute a paper trade (buy or sell)
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaperTradeInput"
+      responses:
+        "200":
+          description: Trade result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaperTradeResult"
+
+  /paper-trade/history:
+    get:
+      operationId: getPaperTradeHistory
+      tags: [paper-trade]
+      summary: Get paper trade history
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Trade history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaperTrade"
+
+  /paper-trade/performance:
+    get:
+      operationId: getPaperPerformance
+      tags: [paper-trade]
+      summary: Get portfolio value over time for performance chart
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Performance data points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerformancePoint"
+
+  /portfolio/holdings:
+    get:
+      operationId: getPortfolioHoldings
+      tags: [portfolio]
+      summary: Get user portfolio holdings
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Portfolio holdings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortfolioHolding"
+    post:
+      operationId: addPortfolioHolding
+      tags: [portfolio]
+      summary: Add a holding to portfolio
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioHoldingInput"
+      responses:
+        "201":
+          description: Added holding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioHolding"
+
+  /portfolio/holdings/{id}:
+    patch:
+      operationId: updatePortfolioHolding
+      tags: [portfolio]
+      summary: Update portfolio holding shares
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioHoldingUpdate"
+      responses:
+        "200":
+          description: Updated holding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioHolding"
+    delete:
+      operationId: removePortfolioHolding
+      tags: [portfolio]
+      summary: Remove a holding from portfolio
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /portfolio/summary:
+    get:
+      operationId: getPortfolioSummary
+      tags: [portfolio]
+      summary: Get portfolio allocation summary for pie chart
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Portfolio summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioSummary"
+
+  /stripe/subscription:
+    get:
+      operationId: getSubscription
+      tags: [stripe]
+      summary: Get current user subscription status
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Subscription info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionStatus"
+
+  /stripe/checkout:
+    post:
+      operationId: createCheckoutSession
+      tags: [stripe]
+      summary: Create Stripe checkout session for Pro subscription
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "200":
+          description: Checkout session URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+
+  /stripe/portal:
+    post:
+      operationId: createPortalSession
+      tags: [stripe]
+      summary: Create Stripe customer portal session
+      security:
+        - clerkAuth: []
+      responses:
+        "200":
+          description: Portal session URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalSession"
+
+  /stripe/products:
+    get:
+      operationId: listProducts
+      tags: [stripe]
+      summary: List available subscription plans
+      responses:
+        "200":
+          description: Products with prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductWithPrice"
+
 components:
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: ["string", "null"]
+
+    UserProfile:
+      type: object
+      required: [id, email, isPro]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: ["string", "null"]
+        isPro:
+          type: boolean
+        stripeCustomerId:
+          type: ["string", "null"]
+        stripeSubscriptionId:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        displayName:
+          type: string
+
+    QuizPreferences:
+      type: object
+      required: [userId, completed]
+      properties:
+        userId:
+          type: string
+        strategies:
+          type: array
+          items:
+            type: string
+        capitalRange:
+          type: ["string", "null"]
+        profitTarget:
+          type: ["string", "null"]
+        completed:
+          type: boolean
+
+    QuizPreferencesInput:
+      type: object
+      required: [strategies, capitalRange, profitTarget]
+      properties:
+        strategies:
+          type: array
+          items:
+            type: string
+        capitalRange:
+          type: string
+        profitTarget:
+          type: string
+
+    LearningStreak:
+      type: object
+      required: [currentStreak, longestStreak, lastCheckinDate, checkinDates]
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        lastCheckinDate:
+          type: ["string", "null"]
+        checkinDates:
+          type: array
+          items:
+            type: string
+
+    Lesson:
+      type: object
+      required: [id, title, explanation, whyItMatters, howItWorks, tag, category, dayIndex]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        explanation:
+          type: string
+        whyItMatters:
+          type: string
+        howItWorks:
+          type: array
+          items:
+            type: string
+        tag:
+          type: string
+        category:
+          type: string
+        dayIndex:
+          type: integer
+
+    LessonPreview:
+      type: object
+      required: [id, title, tag, dayIndex]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        tag:
+          type: string
+        dayIndex:
+          type: integer
+
+    WatchlistItem:
+      type: object
+      required: [id, userId, ticker, companyName, addedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        ticker:
+          type: string
+        companyName:
+          type: string
+        addedAt:
+          type: string
+        quote:
+          $ref: "#/components/schemas/StockQuote"
+
+    WatchlistInput:
+      type: object
+      required: [ticker]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: string
+
+    StockQuote:
+      type: object
+      required: [ticker, price, change, changePercent, previousClose]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: ["string", "null"]
+        price:
+          type: number
+        change:
+          type: number
+        changePercent:
+          type: number
+        previousClose:
+          type: number
+        previousHigh:
+          type: number
+        previousLow:
+          type: number
+        volume:
+          type: ["integer", "null"]
+        avgVolume:
+          type: ["integer", "null"]
+        atr:
+          type: ["number", "null"]
+        isHighVolatility:
+          type: boolean
+        sparkline:
+          type: array
+          items:
+            type: number
+
+    StockCard:
+      type: object
+      required: [ticker, companyName, price, changePercent, previousHigh, previousLow, candles]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: string
+        price:
+          type: number
+        changePercent:
+          type: number
+        previousHigh:
+          type: number
+        previousLow:
+          type: number
+        atr:
+          type: ["number", "null"]
+        isHighVolatility:
+          type: boolean
+        candles:
+          type: array
+          items:
+            $ref: "#/components/schemas/OHLCCandle"
+
+    OHLCCandle:
+      type: object
+      required: [time, open, high, low, close, volume]
+      properties:
+        time:
+          type: string
+        open:
+          type: number
+        high:
+          type: number
+        low:
+          type: number
+        close:
+          type: number
+        volume:
+          type: integer
+
+    StockSearchResult:
+      type: object
+      required: [ticker, companyName]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: string
+        sector:
+          type: ["string", "null"]
+
+    MarketInsights:
+      type: object
+      required: [opportunity, slowdown]
+      properties:
+        opportunity:
+          $ref: "#/components/schemas/InsightCard"
+        slowdown:
+          $ref: "#/components/schemas/InsightCard"
+
+    InsightCard:
+      type: object
+      required: [ticker, companyName, summary, label, generatedAt]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: string
+        summary:
+          type: string
+        label:
+          type: string
+        changePercent30d:
+          type: ["number", "null"]
+        generatedAt:
+          type: string
+
+    PaperPortfolio:
+      type: object
+      required: [userId, cashBalance, totalValue, unrealizedPnl, startingBalance]
+      properties:
+        userId:
+          type: string
+        cashBalance:
+          type: number
+        totalValue:
+          type: number
+        unrealizedPnl:
+          type: number
+        startingBalance:
+          type: number
+
+    PaperPosition:
+      type: object
+      required: [id, ticker, companyName, shares, avgCost, currentPrice, totalValue, unrealizedPnl, unrealizedPnlPercent]
+      properties:
+        id:
+          type: integer
+        ticker:
+          type: string
+        companyName:
+          type: string
+        shares:
+          type: number
+        avgCost:
+          type: number
+        currentPrice:
+          type: number
+        totalValue:
+          type: number
+        unrealizedPnl:
+          type: number
+        unrealizedPnlPercent:
+          type: number
+
+    PaperTradeInput:
+      type: object
+      required: [ticker, shares, action]
+      properties:
+        ticker:
+          type: string
+        shares:
+          type: number
+        action:
+          type: string
+          enum: [buy, sell]
+
+    PaperTradeResult:
+      type: object
+      required: [success, trade, portfolio]
+      properties:
+        success:
+          type: boolean
+        trade:
+          $ref: "#/components/schemas/PaperTrade"
+        portfolio:
+          $ref: "#/components/schemas/PaperPortfolio"
+        message:
+          type: ["string", "null"]
+
+    PaperTrade:
+      type: object
+      required: [id, ticker, shares, price, action, total, executedAt]
+      properties:
+        id:
+          type: integer
+        ticker:
+          type: string
+        companyName:
+          type: ["string", "null"]
+        shares:
+          type: number
+        price:
+          type: number
+        action:
+          type: string
+        total:
+          type: number
+        executedAt:
+          type: string
+
+    PerformancePoint:
+      type: object
+      required: [date, value]
+      properties:
+        date:
+          type: string
+        value:
+          type: number
+
+    PortfolioHolding:
+      type: object
+      required: [id, userId, ticker, companyName, shares, avgCost, addedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        ticker:
+          type: string
+        companyName:
+          type: string
+        shares:
+          type: number
+        avgCost:
+          type: number
+        addedAt:
+          type: string
+        currentPrice:
+          type: ["number", "null"]
+        totalValue:
+          type: ["number", "null"]
+        gainLoss:
+          type: ["number", "null"]
+        gainLossPercent:
+          type: ["number", "null"]
+        sparkline:
+          type: array
+          items:
+            type: number
+
+    PortfolioHoldingInput:
+      type: object
+      required: [ticker, shares, avgCost]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: string
+        shares:
+          type: number
+        avgCost:
+          type: number
+
+    PortfolioHoldingUpdate:
+      type: object
+      properties:
+        shares:
+          type: number
+        avgCost:
+          type: number
+
+    PortfolioSummary:
+      type: object
+      required: [totalValue, holdings]
+      properties:
+        totalValue:
+          type: number
+        holdings:
+          type: array
+          items:
+            $ref: "#/components/schemas/AllocationSlice"
+
+    AllocationSlice:
+      type: object
+      required: [ticker, companyName, value, percentage]
+      properties:
+        ticker:
+          type: string
+        companyName:
+          type: string
+        value:
+          type: number
+        percentage:
+          type: number
+
+    SubscriptionStatus:
+      type: object
+      required: [isPro, status]
+      properties:
+        isPro:
+          type: boolean
+        status:
+          type: ["string", "null"]
+        currentPeriodEnd:
+          type: ["string", "null"]
+        priceId:
+          type: ["string", "null"]
+
+    CheckoutInput:
+      type: object
+      required: [priceId]
+      properties:
+        priceId:
+          type: string
+
+    CheckoutSession:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+
+    PortalSession:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+
+    ProductWithPrice:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        prices:
+          type: array
+          items:
+            $ref: "#/components/schemas/PriceInfo"
+
+    PriceInfo:
+      type: object
+      required: [id, unitAmount, currency, interval]
+      properties:
+        id:
+          type: string
+        unitAmount:
+          type: integer
+        currency:
+          type: string
+        interval:
+          type: ["string", "null"]
