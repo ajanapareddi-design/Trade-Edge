@@ -142,7 +142,7 @@ export async function getStockQuote(ticker: string): Promise<StockQuoteData> {
           });
           atr = trs.reduce((a, b) => a + b, 0) / trs.length;
         }
-        sparkline = dates.slice(0, 5).reverse().map(d => parseFloat(series[d]["4. close"]));
+        sparkline = dates.slice(0, 20).reverse().map(d => parseFloat(series[d]["4. close"]));
         // avg volume from last 20 days
         const vols = dates.slice(0, 20).map(d => parseInt(series[d]["5. volume"] || "0"));
         avgVolume = Math.round(vols.reduce((a, b) => a + b, 0) / vols.length);
@@ -183,7 +183,7 @@ export async function getStockOHLC(ticker: string): Promise<OHLCCandle[]> {
     return Object.keys(series)
       .sort()
       .reverse()
-      .slice(0, 5)
+      .slice(0, 100)
       .reverse()
       .map(date => ({
         time: date,
