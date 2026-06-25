@@ -221,7 +221,44 @@ export async function searchStocks(q: string): Promise<{ ticker: string; company
   }
 }
 
-// Curated list of momentum/tech stocks under $80 with high volume
-export const DISCOVER_TICKERS = [
-  "SOFI", "PLTR", "F", "RIVN", "LCID", "SNAP", "PINS", "HOOD", "DKNG", "RBLX"
+// Large pool of momentum/retail-friendly stocks — rotated every 2 weeks
+const TICKER_POOL = [
+  // Fintech & crypto-adjacent
+  "SOFI", "HOOD", "COIN", "AFRM", "UPST", "SQ", "PYPL", "NU",
+  // EV & clean energy
+  "RIVN", "LCID", "XPEV", "NIO", "FSR", "CHPT", "BLNK", "PLUG", "FCEL",
+  // Tech & AI
+  "PLTR", "BBAI", "AI", "PATH", "SOUN", "SMCI", "IONQ", "RGTI", "QUBT",
+  // Social & consumer
+  "SNAP", "PINS", "RDDT", "RBLX", "U", "TTWO", "EA",
+  // Biotech & pharma
+  "MRNA", "BNTX", "NVAX", "SAVA", "BEAM", "EDIT", "CRSP",
+  // Retail & meme-adjacent
+  "GME", "AMC", "DKNG", "PENN", "CHWY", "MSTR",
+  // Mobility & logistics
+  "LYFT", "UBER", "BIRD", "BLDE",
+  // Legacy / high-volume value
+  "F", "GM", "AAL", "UAL", "DAL", "NOK", "BB",
 ];
+
+// Seeded shuffle — deterministic for a given epoch so all users see the same list
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Returns 10 tickers that rotate automatically every 14 days
+export function getDiscoverTickers(): string[] {
+  const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+  const epoch = Math.floor(Date.now() / TWO_WEEKS_MS);
+  return seededShuffle(TICKER_POOL, epoch).slice(0, 10);
+}
+
+// Static export for backward compatibility
+export const DISCOVER_TICKERS = getDiscoverTickers();
