@@ -90,7 +90,7 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl border border-primary/20 bg-primary/5">
                 <div>
                   <div className="font-bold text-primary flex items-center gap-2">
-                    FinEdge Pro <Zap className="w-4 h-4" />
+                    Striple Edge Pro <Zap className="w-4 h-4" />
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
                     Your subscription is active. 

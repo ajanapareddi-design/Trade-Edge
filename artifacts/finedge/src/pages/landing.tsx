@@ -7,11 +7,11 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">
       <header className="container mx-auto px-4 h-20 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
-            <span className="text-primary font-bold text-lg leading-none">FE</span>
+          <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/40 shadow-[0_0_10px_rgba(30,111,255,0.25)]">
+            <span className="text-primary font-bold text-base leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>SE</span>
           </div>
-          <span className="text-xl font-bold tracking-tight text-primary drop-shadow-[0_0_8px_rgba(30,111,255,0.5)]">
-            FinEdge
+          <span className="text-xl font-bold text-primary drop-shadow-[0_0_10px_rgba(30,111,255,0.5)]" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.01em" }}>
+            Striple Edge
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -33,9 +33,9 @@ export default function LandingPage() {
               <Zap className="w-4 h-4" />
               <span>Next-gen trading companion</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight" style={{ fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em" }}>
               Trade like a pro.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary" style={{ fontStyle: "italic" }}>
                 Learn like a beginner.
               </span>
             </h1>

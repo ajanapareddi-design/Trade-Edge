@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -106,8 +106,9 @@
   --popover-foreground: 215 27% 90%;
   --popover-border: 215 62% 24%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Lora', Georgia, serif;
   --app-font-mono: 'JetBrains Mono', monospace;
+  --app-font-display: 'Playfair Display', Georgia, serif;
   --radius: 0.75rem;
 }
 
@@ -154,7 +155,11 @@
     @apply border-border;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply antialiased bg-background text-foreground;
+    font-family: var(--app-font-sans);
+  }
+  h1, h2, h3 {
+    font-family: var(--app-font-display);
   }
   
   /* Apply glow effect to active elements */

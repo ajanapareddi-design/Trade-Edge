@@ -17,8 +17,8 @@ export default function CheckoutSuccessPage() {
           <CheckCircle className="w-12 h-12 text-chart-2" />
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-foreground">
-          Welcome to FinEdge Pro!
+        <h1 className="text-4xl font-bold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+          Welcome to Striple Edge Pro!
         </h1>
         
         <p className="text-lg text-muted-foreground">
